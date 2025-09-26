@@ -1,15 +1,18 @@
 from fastapi import FastAPI
-from api.routers import pois, analytics
 from api.database import engine, Base
+from api.routers import pois
 
-# Create tables in the database
+# This line creates your database tables based on the models
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="SanskritiAR API")
+app = FastAPI(
+    title="SanskritiAR API",
+    description="API for the Smart India Hackathon 2025 Cultural Heritage Project."
+)
 
-app.include_router(pois.router)
-# app.include_router(analytics.router)
+# Include the POI router
+app.include_router(pois.router, prefix="/api")
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the SanskritiAR Backend for SIH 2025!"}
+    return {"message": "Welcome to the SanskritiAR API!"}
