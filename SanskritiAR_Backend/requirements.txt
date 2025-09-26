@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+mysql-connector-python
+pydantic[email]
+python-dotenv
+google-generativeai
+firebase-admin
