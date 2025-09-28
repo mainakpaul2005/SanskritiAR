@@ -48,7 +48,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.sanskritiar_app"
-        minSdk = 24
+        minSdk = 28
         targetSdk = 34
         versionCode = flutterVersionCode
         versionName = flutterVersionName
