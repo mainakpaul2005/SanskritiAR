@@ -11,10 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # REPLACED the old plugin with the new, maintained version
+  # 1. Using the new, maintained AR plugin
   ar_flutter_plugin_2: ^0.0.3
 
-  # Using the latest, compatible versions of other plugins
+  # 2. Using the latest, compatible versions of other plugins
   permission_handler: ^11.3.1
   geolocator: ^12.0.0
   flutter_compass: ^0.8.0
