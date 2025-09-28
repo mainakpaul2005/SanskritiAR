@@ -17,22 +17,28 @@ if (localPropertiesFile.exists()) {
 val flutterVersionCode = localProperties.getProperty("flutter.versionCode")?.toInt() ?: 1
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
 
+// In android/app/build.gradle.kts, use this as your 'android' block
+
 android {
     namespace = "com.example.sanskritiar_app"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
+    // Set Java and Kotlin compilers to target Java 17
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    // THIS IS THE KEY FIX
-    // It tells Kotlin to use a consistent JDK version (17 in this case)
     kotlinOptions {
         jvmTarget = "17"
     }
 
+    // Force Gradle to use the Java 17 toolchain
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
 
     sourceSets {
         getByName("main") {

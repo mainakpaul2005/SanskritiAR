@@ -1,4 +1,7 @@
+// In android/build.gradle.kts
+
 import com.android.build.gradle.LibraryExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 allprojects {
     repositories {
@@ -34,8 +37,19 @@ subprojects {
             if (android.namespace == null) {
                 android.namespace = "com.example.${project.name}"
             }
+
+            // ✅ Force Java 17 for all Android modules
+            android.compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+
+        // ✅ Force Kotlin to target JVM 17 for all modules
+        tasks.withType<KotlinCompile>().configureEach {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
         }
     }
 }
-
-
