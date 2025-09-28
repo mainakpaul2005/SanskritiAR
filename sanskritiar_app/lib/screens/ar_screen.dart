@@ -1,30 +1,57 @@
-import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'dart:async';
 import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart' as vector;
-import 'package:sanskritiar_app/services/api_service.dart';
+import 'package:flutter_compass/flutter_compass.dart';
+// Add these two lines for the AR plugin
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:vector_math/vector_math_64.dart';
 
-class ArScreen extends StatefulWidget {
-  final int poiId;
-  const ArScreen({super.key, required this.poiId});
+class ARScreen extends StatefulWidget {
+  // Remove the 'poiId' parameter as it's no longer used
+  const ARScreen({super.key});
 
   @override
-  State<ArScreen> createState() => _ArScreenState();
+  State<ARScreen> createState() => _ARScreenState();
 }
 
-class _ArScreenState extends State<ArScreen> {
+class _ARScreenState extends State<ARScreen> {
   late ARSessionManager arSessionManager;
   late ARObjectManager arObjectManager;
-  final ApiService apiService = ApiService();
-  String objectUrl = "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb";
+  StreamSubscription<CompassEvent>? _compassSubscription;
+  ARNode? _modelNode;
+  String? _activeDirection;
+
+  // --- CONFIGURATION ---
+  // TODO: CHANGE THIS TO YOUR COMPUTER'S WI-FI IP ADDRESS
+  static const String backendIp = "103.242.196.116"; // Replace with your IP
+
+  final Map<String, Map<String, dynamic>> _directionalModels = {
+    "North": {
+      "min_heading": 315.0,
+      "max_heading": 45.0,
+      "url": "http://$backendIp:8000/models/model_A.glb",
+    },
+    "East": {
+      "min_heading": 45.0,
+      "max_heading": 135.0,
+      "url": "http://$backendIp:8000/models/model_B.glb",
+    },
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _compassSubscription = FlutterCompass.events?.listen(_onCompassData);
+  }
 
   @override
   void dispose() {
+    _compassSubscription?.cancel();
     arSessionManager.dispose();
     super.dispose();
   }
@@ -32,12 +59,12 @@ class _ArScreenState extends State<ArScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tap a Plane to Place Object')),
-      body: ARView(onARViewCreated: onARViewCreated),
+      appBar: AppBar(title: const Text('Point Towards a Direction')),
+      body: ARView(onARViewCreated: _onARViewCreated),
     );
   }
 
-  void onARViewCreated(
+  void _onARViewCreated(
       ARSessionManager sessionManager,
       ARObjectManager objectManager,
       ARAnchorManager anchorManager,
@@ -48,56 +75,64 @@ class _ArScreenState extends State<ArScreen> {
 
     arSessionManager.onInitialize(
       showFeaturePoints: false,
-      showPlanes: true,
-      showWorldOrigin: false,
+      showPlanes: false,
+      handleTaps: false,
     );
     arObjectManager.onInitialize();
-
-    arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
   }
 
-  Future<void> onPlaneOrPointTapped(List<ARHitTestResult> hitTestResults) async {
-    var singleHitTestResult = hitTestResults.firstWhere(
-            (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
+  void _onCompassData(CompassEvent event) {
+    double? heading = event.heading;
+    if (heading == null) return;
 
-    // Show a loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fetching historical data...')));
+    String? targetDirection;
 
-    try {
-      // Fetch content from our backend
-      final content = await apiService.fetchPoiContent(widget.poiId);
+    for (var entry in _directionalModels.entries) {
+      final String direction = entry.key;
+      final double min = entry.value["min_heading"];
+      final double max = entry.value["max_heading"];
 
-      // Add the 3D object to the scene
-      var newNode = ARNode(
-        type: NodeType.webGLB,
-        uri: objectUrl, // This will be the 3D card model
-        scale: vector.Vector3(0.2, 0.2, 0.2),
-        transformation: singleHitTestResult.worldTransform,
-      );
+      if (direction == "North"
+          ? (heading >= min || heading < max)
+          : (heading >= min && heading < max)) {
+        targetDirection = direction;
+        break;
+      }
+    }
 
-      await arObjectManager.addNode(newNode);
+    if (targetDirection != null && _activeDirection != targetDirection) {
+      _activeDirection = targetDirection;
+      _showModelForDirection(targetDirection);
+    } else if (targetDirection == null && _activeDirection != null) {
+      _activeDirection = null;
+      _removeActiveModel();
+    }
+  }
 
-      // Show the fetched text in a dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Did you know?'),
-            content: Text(content['text']),
-            actions: [
-              TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        },
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}'))
-      );
+  Future<void> _showModelForDirection(String direction) async {
+    await _removeActiveModel();
+    final modelData = _directionalModels[direction];
+    if (modelData == null) return;
+
+    // NEW CORRECTED CODE
+    var newNode = ARNode(
+      type: NodeType.webGLB,
+      uri: modelData["url"],
+      scale: Vector3(0.2, 0.2, 0.2),
+      position: Vector3(0.0, -0.5, -2.0),
+      rotation: Vector4(1.0, 0.0, 0.0, 0.0),
+    );
+
+    bool? didAdd = await arObjectManager.addNode(newNode);
+    if (didAdd == true) {
+      _modelNode = newNode;
+    }
+  }
+
+  Future<void> _removeActiveModel() async {
+    if (_modelNode != null) {
+      await arObjectManager.removeNode(_modelNode!);
+      _modelNode = null;
     }
   }
 }

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from api.database import engine, Base
 from api.routers import pois
+from fastapi.staticfiles import StaticFiles
 
 # This line creates your database tables based on the models
 Base.metadata.create_all(bind=engine)
@@ -9,7 +10,7 @@ app = FastAPI(
     title="SanskritiAR API",
     description="API for the Smart India Hackathon 2025 Cultural Heritage Project."
 )
-
+app.mount("/models", StaticFiles(directory="static/models"), name="models")
 # Include the POI router
 app.include_router(pois.router, prefix="/api")
 

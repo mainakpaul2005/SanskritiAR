@@ -34,6 +34,8 @@ dependencies:
   # For Augmented Reality
   ar_flutter_plugin: ^0.7.3
 
+  flutter_compass: ^0.8.0
+
   # For making API calls
   http: ^1.1.0
 

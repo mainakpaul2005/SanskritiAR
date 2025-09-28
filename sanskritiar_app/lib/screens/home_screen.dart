@@ -28,10 +28,8 @@ class HomeScreen extends StatelessWidget {
               ),
               onPressed: () {
                 // We pass a mock POI ID for testing
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ArScreen(poiId: 1)),
-                );
+                // NEW CORRECTED LINE
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ARScreen()));
               },
             ),
           ],
