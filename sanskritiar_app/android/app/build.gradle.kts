@@ -23,23 +23,14 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     // THIS IS THE KEY FIX
     // It tells Kotlin to use a consistent JDK version (17 in this case)
     kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    // Set the JVM toolchain for the entire project
-    // This will force Gradle to use JDK 17 for compilation tasks
-    // and resolve the version mismatch with your installed JDK 23.
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
-        }
+        jvmTarget = "17"
     }
 
 
