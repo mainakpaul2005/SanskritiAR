@@ -1,17 +1,37 @@
+// sanskritiar_app/lib/services/api_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Use 10.0.2.2 for Android emulator, or your computer's local IP for a real device
-  final String _baseUrl = "http://10.0.2.2:8000/api";
+  // --- CHANGE START ---
+  // The base URL of your backend API.
+  // For Android emulator, use 10.0.2.2. For iOS simulator, use localhost.
+  static const String _baseUrl = 'http://10.0.2.2:8000';
+  // --- CHANGE END ---
 
-  Future<Map<String, dynamic>> fetchPoiContent(int poiId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/pois/generate-content/$poiId'));
+  /// Fetches a list of all POIs from the backend.
+  static Future<List<dynamic>> fetchPois() async {
+    final response = await http.get(Uri.parse('$_baseUrl/pois/'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to load content from API. Status code: ${response.statusCode}');
+      throw Exception('Failed to load POIs');
     }
   }
+
+  // --- CHANGE START ---
+  /// Fetches a single POI by its direction.
+  static Future<Map<String, dynamic>?> fetchPoiByDirection(String direction) async {
+    final response = await http.get(Uri.parse('$_baseUrl/pois/direction/$direction'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      // Return null if the POI is not found.
+      return null;
+    }
+  }
+  // --- CHANGE END ---
 }

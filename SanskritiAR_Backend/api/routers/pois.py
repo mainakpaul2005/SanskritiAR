@@ -1,36 +1,50 @@
+# SanskritiAR_Backend/api/routers/pois.py
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import google.generativeai as genai
-import os
 from .. import models, schemas
 from ..database import get_db
 
-router = APIRouter(tags=["Content Generation"])
+router = APIRouter()
 
-# Configure the Gemini API client
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-gemini_model = genai.GenerativeModel('gemini-pro')
+@router.post("/", response_model=schemas.POI)
+def create_poi(poi: schemas.POICreate, db: Session = Depends(get_db)):
+    """
+    Create a new POI.
+    """
+    db_poi = models.POI(**poi.dict())
+    db.add(db_poi)
+    db.commit()
+    db.refresh(db_poi)
+    return db_poi
 
-@router.get("/pois/generate-content/{poi_id}")
-def generate_poi_content(poi_id: int, db: Session = Depends(get_db)):
+@router.get("/", response_model=list[schemas.POI])
+def read_pois(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    Generates dynamic, historical content for a Point of Interest (POI)
-    using the Gemini API.
+    Get a list of all POIs.
     """
-    poi = db.query(models.POI).filter(models.POI.id == poi_id).first()
-    if not poi:
+    pois = db.query(models.POI).offset(skip).limit(limit).all()
+    return pois
+
+# --- CHANGE START ---
+# Added a new endpoint to fetch a POI by its direction.
+@router.get("/direction/{direction_name}", response_model=schemas.POI)
+def read_poi_by_direction(direction_name: str, db: Session = Depends(get_db)):
+    """
+    Get a POI by its direction (e.g., "North", "South").
+    """
+    db_poi = db.query(models.POI).filter(models.POI.direction == direction_name).first()
+    if db_poi is None:
+        raise HTTPException(status_code=404, detail="POI for this direction not found")
+    return db_poi
+# --- CHANGE END ---
+
+@router.get("/{poi_id}", response_model=schemas.POI)
+def read_poi(poi_id: int, db: Session = Depends(get_db)):
+    """
+    Get a POI by its ID.
+    """
+    db_poi = db.query(models.POI).filter(models.POI.id == poi_id).first()
+    if db_poi is None:
         raise HTTPException(status_code=404, detail="POI not found")
-
-    prompt = f"Generate a short, engaging, family-friendly historical fact about '{poi.name}' based on this context: {poi.description_prompt}"
-    
-    try:
-        response = gemini_model.generate_content(prompt)
-        # For the prototype, we return a placeholder for the illustration.
-        illustration_url = "https://via.placeholder.com/300"
-        
-        return {
-            "text": response.text,
-            "illustration_url": illustration_url
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate content from Gemini API: {str(e)}")
+    return db_poi

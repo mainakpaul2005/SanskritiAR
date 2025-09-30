@@ -1,29 +1,30 @@
+# SanskritiAR_Backend/api/schemas.py
+
 from pydantic import BaseModel
-from typing import List, Optional
 
-# Base schema for a POI
 class POIBase(BaseModel):
+    """
+    Base Pydantic schema for a POI.
+    """
     name: str
-    description_prompt: str
+    description: str | None = None
+    # --- CHANGE START ---
+    # Replaced latitude and longitude with a 'direction' field.
+    direction: str
+    # --- CHANGE END ---
+    model_path: str
 
-# Schema for creating a POI
 class POICreate(POIBase):
+    """
+    Pydantic schema for creating a new POI.
+    """
     pass
 
-# Schema for reading a POI (includes ID)
 class POI(POIBase):
+    """
+    Pydantic schema for reading a POI from the database.
+    """
     id: int
-    site_id: int
-    
-    class Config:
-        orm_mode = True
-
-# Schema for reading a Heritage Site, including its list of POIs
-class HeritageSite(BaseModel):
-    id: int
-    name: str
-    description: Optional[str] = None
-    pois: List[POI] = []
 
     class Config:
         orm_mode = True
