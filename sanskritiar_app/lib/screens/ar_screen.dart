@@ -1,8 +1,15 @@
 // sanskritiar_app/lib/screens/ar_screen.dart
 
 import 'package:flutter/material.dart';
+// --- All these imports are from the ar_flutter_plugin package ---
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
 import 'package:sanskritiar_app/services/api_service.dart';
@@ -13,7 +20,9 @@ class DirectionalARScreen extends StatefulWidget {
 }
 
 class _DirectionalARScreenState extends State<DirectionalARScreen> {
-  late ARViewController arViewController;
+  // --- CHANGE: We will use the ARObjectManager to handle 3D models.
+  late ARObjectManager arObjectManager;
+
   ARNode? _arNode;
   String _direction = 'North'; // Default direction
 
@@ -40,24 +49,25 @@ class _DirectionalARScreenState extends State<DirectionalARScreen> {
         newDirection = 'West';
       }
 
-      // Only update the model if the direction has changed.
       if (newDirection != _direction) {
         setState(() {
           _direction = newDirection;
         });
-        _updateARModel();
+        // Check if the arObjectManager is initialized before using it.
+        if (this.arObjectManager != null) {
+          _updateARModel();
+        }
       }
     });
   }
 
   /// Fetches the POI for the current direction and updates the AR model.
   Future<void> _updateARModel() async {
-    // Remove the old model if it exists.
+    // --- CHANGE: Use the object manager to remove the node.
     if (_arNode != null) {
-      arViewController.removeNode(_arNode!);
+      arObjectManager.removeNode(_arNode!);
     }
 
-    // Fetch the new model from the API.
     final poi = await ApiService.fetchPoiByDirection(_direction);
     if (poi != null) {
       final node = ARNode(
@@ -66,7 +76,8 @@ class _DirectionalARScreenState extends State<DirectionalARScreen> {
         scale: vector.Vector3(0.5, 0.5, 0.5),
         position: vector.Vector3(0.0, 0.0, -2.0),
       );
-      arViewController.addARNode(node);
+      // --- CHANGE: Use the object manager to add the new node.
+      arObjectManager.addNode(node);
       _arNode = node;
     }
   }
@@ -76,11 +87,14 @@ class _DirectionalARScreenState extends State<DirectionalARScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('AR View - Facing: $_direction')),
       body: ARView(
-        onARViewCreated: (ARViewController controller) {
-          arViewController = controller;
-          // Load the initial model.
-          _updateARModel();
+        // --- CHANGE START ---
+        // As the error message indicates, onARViewCreated provides these managers.
+        // We capture the objectManager to use it for adding/removing models.
+        onARViewCreated: (ARSessionManager sessionManager, ARObjectManager objectManager, ARAnchorManager anchorManager, ARLocationManager locationManager) {
+          this.arObjectManager = objectManager;
+          _updateARModel(); // Load the initial model.
         },
+        // --- CHANGE END ---
       ),
     );
   }
