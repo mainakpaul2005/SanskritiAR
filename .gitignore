@@ -1,0 +1,203 @@
+# ===================================
+# SanskritiAR Project .gitignore
+# ===================================
+
+# ===================================
+# IDE & Editor Files
+# ===================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===================================
+# Python Backend (SanskritiAR_Backend)
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+env/
+.env
+*.env
+.env.local
+.env.development
+.env.production
+
+# Firebase credentials (IMPORTANT: Never commit!)
+firebase-service-account.json
+*-service-account.json
+
+# ===================================
+# Flutter (sanskritiar_app)
+# ===================================
+# Build directories
+**/build/
+**/android/build/
+**/ios/build/
+**/web/build/
+**/windows/build/
+**/linux/build/
+**/macos/build/
+
+# Flutter/Dart/Pub related
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Android Studio will place build artifacts here
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# iOS specific
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/**/DerivedData/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Android specific
+**/android/.gradle/
+**/android/local.properties
+**/android/gradle/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/captures/
+**/android/.externalNativeBuild/
+**/android/app/google-services.json
+
+# ===================================
+# React Native (sanskritiar_reactnative)
+# ===================================
+# Dependencies
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# React Native
+**/android/app/build/
+**/ios/Pods/
+**/ios/build/
+**/.expo/
+**/.expo-shared/
+
+# Metro bundler
+.metro-health-check*
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+**/ios/Pods/
+**/Podfile.lock
+
+# Fastlane
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# React Native specific
+**/.watchmanconfig
+**/buck-out/
+**/.buckconfig.local
+
+# Google Services
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Firebase config
+.firebaserc
+
+# ===================================
+# Testing
+# ===================================
+coverage/
+*.lcov
+test-results/
+*.test.js.snap
+
+# ===================================
+# Logs
+# ===================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===================================
+# OS Files
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ===================================
+# Temporary Files
+# ===================================
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# ===================================
+# Database Files
+# ===================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ===================================
+# Large Model Files (RAG)
+# ===================================
+**/models/*.bin
+**/models/*.onnx
+**/models/*.pt
+**/models/*.pth
+**/models/*.h5
+**/models/*.pb
+**/static/models/*
+!**/static/models/.gitkeep
+
+# ===================================
+# Secrets & Credentials
+# ===================================
+*.pem
+*.key
+*.cert
+*.p12
+.secrets/
+secrets.json
+credentials.json
